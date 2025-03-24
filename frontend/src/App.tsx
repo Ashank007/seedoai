@@ -37,7 +37,7 @@ function App() {
       <header
         className={`fixed top-0 w-full ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md z-10`}
       >
-        <div className='container mx-auto px-4 h-16 flex items-center justify-between'>
+        <div className='container mx-auto px-4 h-14 flex items-center justify-between'>
           <div className='flex items-center space-x-2 '>
             {selectedCategory && (
               <button
@@ -89,7 +89,7 @@ function App() {
                 className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg hover:shadow-xl transition-all duration-300`}
               >
                 <div
-                  className={`${category.color} w-12 h-12 rounded-full flex items-center justify-center mb-4`}
+                  className={`${category.color} w-20 h-20 rounded-full flex items-center justify-center mb-4`}
                 >
                   <category.icon className='text-white' size={24} />
                 </div>

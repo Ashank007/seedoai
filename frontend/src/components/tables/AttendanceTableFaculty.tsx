@@ -24,6 +24,7 @@ const AttendanceTable_Staff: React.FC<Props> = ({ category, darkMode, data }) =>
   const [sortField, setSortField] = useState<"facultyid" | "att_type" | "date">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFacultyId, setSelectedFacultyId] = useState<string | null>(null); // New state for selected ID
   const [showGraph, setShowGraph] = useState(false); // State to toggle graph
   const recordsPerPage = 10;
 
@@ -32,12 +33,12 @@ const AttendanceTable_Staff: React.FC<Props> = ({ category, darkMode, data }) =>
     const lowerSearchTerm = searchTerm.toLowerCase().trim();
     
     const filtered = data.filter(record => {
-      const matchesStudentId = record.facultyid.toLowerCase().includes(lowerSearchTerm);
+      const matchesFacultyId = record.facultyid.toLowerCase().includes(lowerSearchTerm);
       const matchesTimestamp = record.timestamps.some(timestamp => 
         timestamp.date.toLowerCase().includes(lowerSearchTerm) ||
         timestamp.att_type.toLowerCase().includes(lowerSearchTerm)
       );
-      return matchesStudentId || matchesTimestamp;
+      return matchesFacultyId || matchesTimestamp;
     });
 
     return filtered
@@ -64,6 +65,12 @@ const AttendanceTable_Staff: React.FC<Props> = ({ category, darkMode, data }) =>
         return sortDirection === "asc" ? comparison : -comparison;
       });
   }, [data, searchTerm, sortField, sortDirection]);
+
+   // Get unique student IDs for the dropdown
+  const uniqueFacultyIds = useMemo(() => {
+    return Array.from(new Set(data.map(record => record.facultyid))).sort();
+  }, [data]);
+
 
   // Reset page to 1 when search term changes
   React.useEffect(() => {
@@ -129,21 +136,39 @@ const AttendanceTable_Staff: React.FC<Props> = ({ category, darkMode, data }) =>
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
-        <button
-          onClick={exportData}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          <Download size={20} />
-          Export CSV
-        </button>
-	<button
-	      onClick={() => setShowGraph(true)}
-	      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-	    >
-	      <BarChart2 size={20} />
-	      Show Graph
-	    </button>
-
+        <div className="flex gap-2 items-center">
+          <select
+            value={selectedFacultyId || ""}
+            onChange={(e) => setSelectedFacultyId(e.target.value || null)}
+            className={`px-4 py-2 rounded-lg border ${
+              darkMode
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300"
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          >
+            <option value="">All Faculties</option>
+            {uniqueFacultyIds.map(id => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={exportData}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            <Download size={20} />
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowGraph(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            <BarChart2 size={20} />
+            Show Graph
+          </button>
+        </div>
+ 
       </div>
 
       <div className="overflow-x-auto">
@@ -237,6 +262,7 @@ const AttendanceTable_Staff: React.FC<Props> = ({ category, darkMode, data }) =>
         <AttendanceGraph
           data={processedData}
           darkMode={darkMode}
+	  selectedId={selectedFacultyId}
           onClose={() => setShowGraph(false)}
         />
       )}

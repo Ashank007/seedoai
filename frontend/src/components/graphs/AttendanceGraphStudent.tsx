@@ -22,13 +22,17 @@ interface GraphData {
 interface Props {
   data: GraphData[];
   darkMode: boolean;
+  selectedId: string | null;
   onClose: () => void; // Callback to close the graph
 }
 
-const AttendanceGraph_Student: React.FC<Props> = ({ data, darkMode, onClose }) => {
+const AttendanceGraph_Student: React.FC<Props> = ({ data, darkMode,selectedId,onClose }) => {
   const graphData = React.useMemo(() => {
-    const checkIns = data.filter(d => d.att_type === "CheckIn").length;
-    const checkOuts = data.filter(d => d.att_type === "CheckOut").length;
+    const filteredData = selectedId
+      ? data.filter(d => d.studentid === selectedId)
+      : data;
+    const checkIns = filteredData.filter(d => d.att_type === "CheckIn").length;
+    const checkOuts = filteredData.filter(d => d.att_type === "CheckOut").length;
 
     return {
       labels: ["Check Ins", "Check Outs"],
@@ -46,7 +50,7 @@ const AttendanceGraph_Student: React.FC<Props> = ({ data, darkMode, onClose }) =
         borderWidth: 1,
       }]
     };
-  }, [data]);
+  }, [data,selectedId]);
 
   const graphOptions = {
     responsive: true,
@@ -59,7 +63,7 @@ const AttendanceGraph_Student: React.FC<Props> = ({ data, darkMode, onClose }) =
       },
       title: {
         display: true,
-        text: 'Attendance Statistics',
+        text: selectedId ? `Attendance for ${selectedId}` : 'Overall Attendance Statistics',
         color: darkMode ? '#e5e7eb' : '#374151',
       },
     },
@@ -89,7 +93,7 @@ const AttendanceGraph_Student: React.FC<Props> = ({ data, darkMode, onClose }) =
       <div className={`p-6 rounded-lg ${darkMode ? "bg-gray-800" : "bg-white"} max-w-2xl w-full`}>
         <div className="flex justify-between items-center mb-4">
           <h2 className={`${darkMode ? "text-white" : "text-gray-800"} text-xl font-semibold`}>
-            Attendance Statistics
+	  {selectedId ? `Attendance for ${selectedId}` : "Overall Attendance Statistics"}
           </h2>
           <button
             onClick={onClose}

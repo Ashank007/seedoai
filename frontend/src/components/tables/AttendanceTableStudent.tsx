@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Download, Search, ChevronDown, ChevronUp,BarChart2 } from "lucide-react";
+import { Download, Search, ChevronDown, ChevronUp, BarChart2 } from "lucide-react";
 import AttendanceGraph from "../graphs/AttendanceGraphStudent";
 
 type AttendanceType = "CheckIn" | "CheckOut";
@@ -25,7 +25,8 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
   const [sortField, setSortField] = useState<"studentid" | "att_type" | "date">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showGraph, setShowGraph] = useState(false); // State to toggle graph
+  const [showGraph, setShowGraph] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null); // New state for selected ID
   const recordsPerPage = 10;
 
   // Memoized filtered and flattened data
@@ -66,6 +67,11 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
       });
   }, [data, searchTerm, sortField, sortDirection]);
 
+  // Get unique student IDs for the dropdown
+  const uniqueStudentIds = useMemo(() => {
+    return Array.from(new Set(data.map(record => record.studentid))).sort();
+  }, [data]);
+
   // Reset page to 1 when search term changes
   React.useEffect(() => {
     setCurrentPage(1);
@@ -92,7 +98,7 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
 
   const exportData = () => {
     const csv = [
-      ["Student ID","Type", "Timestamp"],
+      ["Student ID", "Type", "Timestamp"],
       ...processedData.map(record => [
         record.studentid,
         record.att_type,
@@ -120,7 +126,7 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
           }`} />
           <input
             type="text"
-            placeholder="Search by ID, name, type, or date..."
+            placeholder="Search by ID, type, or date..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`pl-10 pr-4 py-2 w-full rounded-lg border ${
@@ -130,20 +136,38 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
-        <button
-          onClick={exportData}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          <Download size={20} />
-          Export CSV
-        </button>
-	<button
-	      onClick={() => setShowGraph(true)}
-	      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-	    >
-	      <BarChart2 size={20} />
-	      Show Graph
-	    </button>
+        <div className="flex gap-2 items-center">
+          <select
+            value={selectedStudentId || ""}
+            onChange={(e) => setSelectedStudentId(e.target.value || null)}
+            className={`px-4 py-2 rounded-lg border ${
+              darkMode
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300"
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          >
+            <option value="">All Students</option>
+            {uniqueStudentIds.map(id => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={exportData}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            <Download size={20} />
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowGraph(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            <BarChart2 size={20} />
+            Show Graph
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -233,10 +257,12 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
           </div>
         )}
       </div>
+
       {showGraph && (
         <AttendanceGraph
           data={processedData}
           darkMode={darkMode}
+          selectedId={selectedStudentId} // Pass selected ID
           onClose={() => setShowGraph(false)}
         />
       )}
