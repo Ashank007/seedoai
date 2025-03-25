@@ -1,18 +1,13 @@
-import React, { useState, useMemo } from "react";
-import { Download, Search, ChevronDown, ChevronUp, BarChart2 } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
+import { BlockSelector } from "../Student/ClassSelector";
+import { TableControls } from "../Student/TableControls";
+import { TableContent } from "../Student/TableContent";
+import { Pagination } from "../Pagination";
 import AttendanceGraph from "../graphs/AttendanceGraphStudent";
-
-type AttendanceType = "CheckIn" | "CheckOut";
-
-interface TimestampEntry {
-  att_type: AttendanceType;
-  date: string;
-}
-
-interface AttendanceRecord {
-  studentid: string;
-  timestamps: TimestampEntry[];
-}
+import { setSelectedClass, getSelectedClass, subscribeToClassChanges } from "../context/GlobalClass";
+import { processAttendanceData, type ProcessedRecord } from "../Student/processAttendanceData";
+import { AttendanceRecord } from "../Student/types";
 
 interface Props {
   category: string;
@@ -25,71 +20,66 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
   const [sortField, setSortField] = useState<"studentid" | "att_type" | "date">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showGraph, setShowGraph] = useState(false);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null); // New state for selected ID
+  const [selectedClass, setLocalSelectedClass] = useState<string | null>(getSelectedClass());
   const recordsPerPage = 10;
 
-  // Memoized filtered and flattened data
-  const processedData = useMemo(() => {
-    const lowerSearchTerm = searchTerm.toLowerCase().trim();
-    
-    const filtered = data.filter(record => {
-      const matchesStudentId = record.studentid.toLowerCase().includes(lowerSearchTerm);
-      const matchesTimestamp = record.timestamps.some(timestamp => 
-        timestamp.date.toLowerCase().includes(lowerSearchTerm) ||
-        timestamp.att_type.toLowerCase().includes(lowerSearchTerm)
-      );
-      return matchesStudentId || matchesTimestamp;
+  useEffect(() => {
+    const unsubscribe = subscribeToClassChanges((classname) => {
+      console.log("AttendanceTable_Student: Class updated to:", classname);
+      setLocalSelectedClass(classname);
     });
+    return () => unsubscribe();
+  }, []);
 
-    return filtered
-      .flatMap(record => 
-        record.timestamps.map(timestamp => ({
-          studentid: record.studentid,
-          att_type: timestamp.att_type,
-          date: timestamp.date
-        }))
-      )
-      .sort((a, b) => {
-        let comparison = 0;
-        switch (sortField) {
-          case "studentid":
-            comparison = a.studentid.localeCompare(b.studentid);
-            break;
-          case "att_type":
-            comparison = a.att_type.localeCompare(b.att_type);
-            break;
-          case "date":
-            comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
-            break;
-        }
-        return sortDirection === "asc" ? comparison : -comparison;
-      });
-  }, [data, searchTerm, sortField, sortDirection]);
+const classCounts = useMemo(() => {
+  const counts: Record<string, number> = {};
+  data.forEach(record => {
+    counts[record.classname] = (counts[record.classname] || 0) + 1;
+  });
+  return counts;
+}, [data]);
 
-  // Get unique student IDs for the dropdown
+  // Extract unique classes for selection
+ const uniqueBlocks = useMemo(() => {
+  return Object.keys(classCounts).length > 0
+    ? Object.entries(classCounts).map(([classname, count]) => ({ classname, count }))
+    : [{ classname: "D-201", count: 0 }, { classname: "D-202", count: 0 }, { classname: "D-203", count: 0 }];
+}, [classCounts]);
+  // Process attendance data based on selected block
+  const processedData = useMemo(() => processAttendanceData(data, selectedClass, searchTerm, sortField, sortDirection), 
+    [data, selectedClass, searchTerm, sortField, sortDirection]);
+
+  // Filter out records with "N/A"
+  const filteredData = useMemo(() => {
+    return processedData.filter(record => record.att_type !== "N/A");
+  }, [processedData]);
+
+  // Unique faculty IDs in selected block
   const uniqueStudentIds = useMemo(() => {
-    return Array.from(new Set(data.map(record => record.studentid))).sort();
-  }, [data]);
+    return Array.from(new Set(data.filter(record => record.classname === selectedClass).map(record => record.studentid))).sort();
+  }, [data, selectedClass]);
 
-  // Reset page to 1 when search term changes
-  React.useEffect(() => {
+
+  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+  const currentData = useMemo(() => {
+    console.log("Current data slice:", filteredData.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage));
+    return filteredData.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
+  }, [filteredData, currentPage]);
+
+  const graphData = useMemo(() => {
+    return processedData.filter(record => record.att_type !== "N/A") as { studentid: string; att_type: "CheckIn" | "CheckOut"; date: string }[];
+  }, [processedData]);
+
+  useEffect(() => {
+    setSearchTerm("");
     setCurrentPage(1);
-  }, [searchTerm]);
-
-  // Pagination calculations
-  const totalPages = Math.ceil(processedData.length / recordsPerPage);
-  const currentData = useMemo(() => 
-    processedData.slice(
-      (currentPage - 1) * recordsPerPage,
-      currentPage * recordsPerPage
-    ),
-    [processedData, currentPage]
-  );
+  }, [selectedClass]);
 
   const handleSort = (field: typeof sortField) => {
     if (field === sortField) {
-      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+      setSortDirection(prev => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortField(field);
       setSortDirection("asc");
@@ -97,178 +87,90 @@ const AttendanceTable_Student: React.FC<Props> = ({ category, darkMode, data }) 
   };
 
   const exportData = () => {
-    const csv = [
-      ["Student ID", "Type", "Timestamp"],
-      ...processedData.map(record => [
-        record.studentid,
-        record.att_type,
-        record.date
-      ])
-    ]
-    .map(row => row.join(","))
-    .join("\n");
-
+    const csv = [["Student ID", "Type", "Timestamp"], ...processedData.map(record => [record.studentid, record.att_type, record.date])]
+      .map(row => row.join(","))
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `attendance_${category}_${new Date().toISOString()}.csv`;
+    a.download = `attendance_${category}_${selectedClass || "all"}_${new Date().toISOString()}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
+  const handleBlockSelection = (classname: string | null) => {
+    console.log("Class selected:", classname);
+    setSelectedClass(classname);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative flex-1 w-full sm:max-w-xs">
-          <Search className={`absolute left-3 top-2.5 h-5 w-5 ${
-            darkMode ? "text-gray-400" : "text-gray-500"
-          }`} />
-          <input
-            type="text"
-            placeholder="Search by ID, type, or date..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`pl-10 pr-4 py-2 w-full rounded-lg border ${
-              darkMode
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-white border-gray-300"
-            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-        </div>
-        <div className="flex gap-2 items-center">
-          <select
-            value={selectedStudentId || ""}
-            onChange={(e) => setSelectedStudentId(e.target.value || null)}
-            className={`px-4 py-2 rounded-lg border ${
-              darkMode
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-white border-gray-300"
-            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          >
-            <option value="">All Students</option>
-            {uniqueStudentIds.map(id => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={exportData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <Download size={20} />
-            Export CSV
-          </button>
-          <button
-            onClick={() => setShowGraph(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            <BarChart2 size={20} />
-            Show Graph
-          </button>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className={`w-full ${darkMode ? "text-gray-200" : "text-gray-700"}`}>
-          <thead>
-            <tr className={darkMode ? "bg-gray-800" : "bg-gray-50"}>
-              {[
-                { label: "Student ID", field: "studentid" },
-                { label: "Type", field: "att_type" },
-                { label: "Timestamp", field: "date" }
-              ].map(({ label, field }) => (
-                <th
-                  key={field}
-                  className="px-6 py-3 text-left cursor-pointer"
-                  onClick={() => handleSort(field as typeof sortField)}
-                >
-                  <div className="flex items-center gap-2">
-                    {label}
-                    {sortField === field && (
-                      sortDirection === "asc" ? 
-                        <ChevronUp size={16} /> : 
-                        <ChevronDown size={16} />
-                    )}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {currentData.length > 0 ? (
-              currentData.map((record, index) => (
-                <tr
-                  key={`${record.studentid}-${record.date}-${index}`}
-                  className={`${darkMode ? "hover:bg-gray-800" : "hover:bg-gray-50"}`}
-                >
-                  <td className="px-6 py-4">{record.studentid}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-sm ${
-                        record.att_type === "CheckIn"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {record.att_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {record.date ? new Date(record.date).toLocaleString() : "N/A"}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center">
-                  No matching records found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex justify-between items-center mt-4">
-        <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
-          Showing {(currentPage - 1) * recordsPerPage + 1} to{" "}
-          {Math.min(currentPage * recordsPerPage, processedData.length)} of{" "}
-          {processedData.length} records
-        </p>
-        {totalPages > 1 && (
-          <div className="flex gap-2">
-            {Array.from({ length: totalPages }, (_, i) => (
+      {selectedClass ? (
+        filteredData.length === 0 ? (
+          <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
+            No attendance records with timestamps found for {selectedClass}.
+          </p>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
               <button
-                key={i + 1}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === i + 1
-                    ? "bg-blue-500 text-white"
-                    : darkMode
-                    ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                onClick={() => handleBlockSelection(null)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
-                {i + 1}
+                <ArrowLeft size={20} />
+                Back to Classes
               </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {showGraph && (
-        <AttendanceGraph
-          data={processedData}
-          darkMode={darkMode}
-          selectedId={selectedStudentId} // Pass selected ID
-          onClose={() => setShowGraph(false)}
-        />
+              <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
+                {selectedClass} Attendance
+              </h2>
+            </div>
+            <TableControls
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+	      selectedStudentId={selectedStudentId}
+              setSelectedStudentId={setSelectedStudentId}
+              uniqueStudentIds={uniqueStudentIds}
+              onExport={exportData}
+              onShowGraph={() => setShowGraph(true)}
+              darkMode={darkMode}
+            />
+            <TableContent
+              currentData={currentData}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              darkMode={darkMode}
+            />
+            <div className="flex justify-between items-center mt-4">
+              <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
+                Showing {(currentPage - 1) * recordsPerPage + 1} to{" "}
+                {Math.min(currentPage * recordsPerPage, filteredData.length)} of {filteredData.length} records
+              </p>
+              <Pagination
+                totalPages={totalPages}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                darkMode={darkMode}
+              />
+            </div>
+            {showGraph && (
+              <AttendanceGraph
+                data={graphData}
+                darkMode={darkMode}
+                selectedId={selectedStudentId}
+                onClose={() => setShowGraph(false)}
+              />
+            )}
+          </>
+        )
+      ) : (
+        <BlockSelector uniqueClass={uniqueBlocks} onClassSelect={handleBlockSelection} darkMode={darkMode} />
       )}
     </div>
   );
 };
+
 
 export default AttendanceTable_Student;
 

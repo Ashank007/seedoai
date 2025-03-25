@@ -15,7 +15,7 @@ const StudentSchema = new mongoose.Schema({
 			},
 		},
 	],
-	block:{
+	classname:{
 		type:String
 	}
 },{versionKey:false});

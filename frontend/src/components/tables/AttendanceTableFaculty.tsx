@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { BlockSelector } from "../Faculty/BlockSelector";
 import { TableControls } from "../Faculty/TableControls";
 import { TableContent } from "../Faculty/TableContent";
-import { Pagination } from "../Faculty/Pagination";
+import { Pagination } from "../Pagination";
 import AttendanceGraph from "../graphs/AttendanceGraphFaculty";
 import { setSelectedBlock, getSelectedBlock, subscribeToBlockChanges } from "../context/GlobalBlock";
 import { processAttendanceData, type ProcessedRecord } from "../Faculty/processAttendanceData";
@@ -61,10 +61,6 @@ const blockCounts = useMemo(() => {
     return Array.from(new Set(data.filter(record => record.block === selectedBlock).map(record => record.facultyid))).sort();
   }, [data, selectedBlock]);
 
-  // Calculate faculty count in selected block
-  const facultyCount = useMemo(() => {
-    return data.filter(record => record.block === selectedBlock).length;
-  }, [data, selectedBlock]);
 
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
   const currentData = useMemo(() => {
