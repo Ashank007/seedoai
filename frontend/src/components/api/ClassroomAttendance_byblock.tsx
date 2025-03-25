@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import AttendanceTable from "../AttendanceTable";
+import AttendanceTable from "../tables/AttendanceTableStudent";
 
 const ClassroomAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   const [data, setData] = useState([]);

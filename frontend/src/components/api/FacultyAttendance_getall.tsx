@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import AttendanceTable from "../AttendanceTable";
-
+import AttendanceTable_Faculty from "../tables/AttendanceTableFaculty";
+const BACKENDURI = "http://localhost:9000";
 const FacultyAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,9 +9,9 @@ const FacultyAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
 
   useEffect(() => {
     axios
-      .post("/api/faculty-attendance", { category: "faculty" }) // Send POST request
+      .get(`${BACKENDURI}/api/v1/faculty/getall`)
       .then((response) => {
-        setData(response.data);
+        setData(response.data.message);
         setLoading(false);
       })
       .catch((error) => {
@@ -24,7 +24,7 @@ const FacultyAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   if (loading) return <p>Loading faculty attendance...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  return <AttendanceTable category="faculty" darkMode={darkMode} data={data} />;
+  return <AttendanceTable_Faculty category="faculty" darkMode={darkMode} data={data} />;
 };
 
 export default FacultyAttendance;

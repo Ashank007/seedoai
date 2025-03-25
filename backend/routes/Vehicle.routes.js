@@ -10,6 +10,6 @@ const VehicleRouter = express.Router();
 VehicleRouter.post("/add", AddVehicle);
 VehicleRouter.post("/mark", MarkVehicle);
 VehicleRouter.get("/getall", GetVehicle);
-VehicleRouter.post("/getcount", GetVehicleCountByDate);
+VehicleRouter.get("/getcount", GetVehicleCountByDate);
 
 export default VehicleRouter;

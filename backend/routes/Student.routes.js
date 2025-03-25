@@ -10,6 +10,6 @@ const StudentRouter = express.Router();
 StudentRouter.post("/add", AddStudent);
 StudentRouter.post("/mark", MarkAttendance);
 StudentRouter.get("/getall", GetStudent);
-StudentRouter.post("/getcount", GetStudentCountByDate);
+StudentRouter.get("/getcount", GetStudentCountByDate);
 
 export default StudentRouter;
