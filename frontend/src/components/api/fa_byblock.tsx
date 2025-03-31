@@ -3,7 +3,7 @@ import axios from "axios";
 import AttendanceTable_Staff from "../tables/AttendanceTableFaculty";
 import { getSelectedBlock, subscribeToBlockChanges } from "../context/GlobalBlock";
 
-const BACKENDURI = "http://localhost:9000/api/v1";
+const BACKEND_URI = import.meta.env.VITE_BACKEND_URL;
 
 const FacultyAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   const [data, setData] = useState<AttendanceRecord[]>([]);
@@ -30,7 +30,7 @@ const FacultyAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
     setLoading(true);
     console.log("Fetching data for block:", selectedBlock);
     axios
-      .post(`${BACKENDURI}/faculty/getbyblock`, { block: selectedBlock })
+      .post(`${BACKEND_URI}/faculty/getbyblock`, { block: selectedBlock })
       .then((response) => {
         console.log("API response:", response.data);
         const records = response.data.message || [];

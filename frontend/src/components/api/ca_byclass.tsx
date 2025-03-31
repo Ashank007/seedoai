@@ -3,7 +3,7 @@ import axios from "axios";
 import AttendanceTable from "../tables/AttendanceTableStudent";
 import { getSelectedClass, subscribeToClassChanges } from "../context/GlobalClass";
 
-const BACKENDURI = "http://localhost:9000/api/v1";
+const BACKEND_URI = import.meta.env.VITE_BACKEND_URL;
 
 const ClassroomAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   const [data, setData] = useState<AttendanceRecord[]>([]);
@@ -28,7 +28,7 @@ useEffect(() => {
       return;
     }
     axios
-      .post(`${BACKENDURI}/student/getbyclass`, { classname: selectedClass }) // Send POST request with payload
+      .post(`${BACKEND_URI}/student/getbyclass`, { classname: selectedClass }) // Send POST request with payload
       .then((response) => {
         const records = response.data.message || [];
         setData(records);

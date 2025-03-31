@@ -1,0 +1,168 @@
+/* General Calendar Container Styling */
+.custom-calendar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 60vh;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+  max-width: 100vw;
+}
+
+/* Center the Calendar */
+.custom-calendar {
+  max-width: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Calendar Navigation */
+.react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #4f46e5;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.react-calendar__navigation button {
+  color: white;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.react-calendar__navigation button:hover {
+  transform: scale(1.05);
+}
+
+/* Calendar Weekday Labels */
+.react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: bold;
+  color: #4f46e5;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* Calendar Tiles */
+.react-calendar__tile {
+  text-align: center;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151 !important;
+}
+
+/* ✅ Highlight Today's Date */
+.today-day {
+  background: #3b82f6 !important;  /* Blue highlight */
+  color: white !important;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 16px;
+  transition: 0.3s;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Subtle glow */
+}
+
+/* ✅ Present Days (Green) */
+.present-day {
+  background: #22c55e !important;
+  color: white !important;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+/* ❌ Absent Days (Red) */
+.absent-day {
+  background: #f87171 !important;
+  color: white !important;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+/* Disabled Days */
+.react-calendar__tile--disabled {
+  color: #a1a1aa !important;
+}
+
+/* Hide Neighboring Month Days */
+.react-calendar__month-view__days__day--neighboringMonth {
+  visibility: hidden !important;
+}
+
+/* ✅ Fix Weekend Days (Saturday & Sunday) */
+.react-calendar__month-view__days__day--weekend {
+  color: #374151 !important; /* Same as weekdays */
+  font-weight: normal !important;
+  background: transparent !important; /* Removes any special weekend colors */
+}
+
+/* ✨ Hover Effect */
+.react-calendar__tile:hover {
+  background: rgba(79, 70, 229, 0.1);
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 640px) { /* sm: breakpoint */
+  .custom-calendar {
+    max-width: 450px;
+    padding: 24px;
+  }
+
+  .react-calendar__navigation {
+    font-size: 18px;
+  }
+
+  .react-calendar__tile {
+    padding: 14px;
+    font-size: 18px;
+    width: 45px;
+    height: 45px;
+  }
+}
+
+@media (min-width: 1024px) { /* lg: breakpoint */
+  .custom-calendar {
+    max-width: 500px;
+  }
+
+  .react-calendar__tile {
+    padding: 18px;
+    font-size: 20px;
+    width: 50px;
+    height: 50px;
+  }
+}
+
+
