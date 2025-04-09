@@ -7,6 +7,8 @@ import ProtectedRoute from '../src/components/pages/ProtectedRoute';
 import ApplyLeave from './components/pages/ApplyLeave';
 import StatusLeave from './components/pages/StatusLeave';
 import Attendance from './components/pages/Attendance';
+import FacultyForm from './components/pages/AddFaculty';
+import StudentForm from './components/pages/AddStudent';
 import './index.css';
 import AdminDashboard from './components/pages/AdminDashboard';
 import SmartAttendance from './components/pages/SmartAttendance';
@@ -22,6 +24,8 @@ createRoot(document.getElementById('root')!).render(
 	<Route path = "/admin" element={<AdminDashboard/>} />
           <Route path='/smart-dashboard' element={<SmartAttendance />} />
 	  <Route path='/leaverequests' element={<LeaveRequests /> } />
+	  <Route path='/add-faculty' element={<FacultyForm />} />
+	  <Route path='/add-student' element={<StudentForm />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['faculty', 'admin']} />}>

@@ -35,10 +35,9 @@ try {
 const GetAllLeaves = async (req,res) => {
 try {
   const leavesdata = [];
-  const faculties = await Faculty.find({}).populate({path:"leaves",populate:{path:"appliedby",select:"_id name"}});
-  console.log(faculties)
-  faculties.forEach((data) => {
-	if(data.leaves.length > 0)leavesdata.push(data.leaves);
+  const leaves = await Leave.find({}).populate("appliedby","name email facultyid").select("reason leavestatus proof startdate enddate");
+  leaves.forEach((data) => {
+	if(data) leavesdata.push(data);
   })
   res.status(200).json(new ApiResponse(true,leavesdata));
 } catch (error) {

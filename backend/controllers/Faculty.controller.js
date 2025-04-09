@@ -9,13 +9,13 @@ const Register = async (req, res) => {
  try {
   const { name, email, password } = req.body
   if (!name || !email || !password) return res.status(400).json(new ApiResponse(false, 'Name,Email and Password are required'))
- const faculty = await Faculty.findOne({ email: email })
+  const faculty = await Faculty.findOne({ email: email })
   if (faculty) return res.status(400).json(new ApiResponse(false, 'Faculty already exists'))
   const hashedpassword = await bcrypt.hash(password, 10)
   await Faculty.create({
-  name: name,
-  email: email,
-  password: hashedpassword
+   name: name,
+   email: email,
+   password: hashedpassword
   })
   res.status(201).json(new ApiResponse(true, 'Faculty registered successfully'))
  } catch (error) {
@@ -40,7 +40,8 @@ const Login = async (req, res) => {
 
 const AddFaculty = async (req, res) => {
  try {
-  const { email, faculty_id, block } = req.body
+  const { email, faculty_id, block } = req.body;
+  console.log(req.body);
   if (!email || !faculty_id || !block) return res.status(400).json(new ApiResponse(false, 'Email, Faculty ID, and Block are required'))
   const faculty = await Faculty.findOne({ email: email })
   if (!faculty) return res.status(404).json(new ApiResponse(false, 'Faculty Not Found'))
@@ -131,4 +132,24 @@ const GetFacultyName = async (req, res) => {
   res.status(500).json(new ApiError(false, error.message))
  }
 }
-export { Register, Login, AddFaculty, MarkFaculty, GetFaculty, GetFacultyByBlock, GetFacultyCountByDate, GetFacultyAttendance, GetFacultyName };
+
+const AddFacultyBulk = async (req, res) => {
+ try {
+  const { email, faculty_id, block } = req.body
+
+  if (!email || !faculty_id || !block || email.length !== faculty_id.length || faculty_id.length !== block.length) {
+   return res.status(400).json(new ApiResponse(false, 'Data is Incomplete'))
+  }
+  const formatteddata = email.map((e, index) => ({
+   email: e,
+   faculty_id: faculty_id[index],
+   block: block[index]
+  }))
+  await Faculty.insertMany(formatteddata)
+
+  res.status(201).json(new ApiResponse(true, 'Faculty Added in Bulk Successfully'))
+ } catch (error) {
+  res.status(500).json(new ApiError(false, error.message))
+ }
+}
+export { Register, Login, AddFaculty, MarkFaculty, GetFaculty, GetFacultyByBlock, GetFacultyCountByDate, GetFacultyAttendance, GetFacultyName, AddFacultyBulk }

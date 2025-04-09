@@ -85,7 +85,7 @@ const LeaveRequests = () => {
           data.map((leave) => (
             <div key={leave._id} className="bg-white shadow-lg rounded-xl p-6 border border-gray-200 flex flex-col hover:shadow-2xl transition">
               <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg font-semibold text-gray-800">{leave.reason}</h2>
+                <h2 className="text-lg font-semibold text-gray-800">Reason : {leave.reason}</h2>
                 <select
                   value={leave.leavestatus}
                   onChange={(e) => updateLeaveStatus(leave._id, e.target.value as "Pending" | "Accepted" | "Rejected")}
