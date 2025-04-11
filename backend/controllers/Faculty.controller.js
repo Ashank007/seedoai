@@ -60,7 +60,7 @@ const MarkFaculty = async (req, res) => {
   if (!faculty_id || !type) return res.status(400).json(new ApiResponse(false, 'Faculty ID and type are required'))
   const faculty = await Faculty.findOne({ facultyid: faculty_id })
   if (!faculty) return res.status(404).json(new ApiResponse(false, 'Faculty not found'))
-  const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD hh:mm A')
+  const currentDate = moment().format('YYYY-MM-DD hh:mm A')
   faculty.timestamps.push({ att_type: type, date: currentDate })
   await faculty.save()
   res.status(200).json(new ApiResponse(true, `Attendance marked successfully for Faculty ID: ${faculty_id}`))
@@ -99,6 +99,7 @@ const GetFacultyByBlock = async (req, res) => {
 const GetFacultyCountByDate = async (req, res) => {
  try {
   const date = moment().format('YYYY-MM-DD')
+  console.log(date)
   const records = await Faculty.find({
    'timestamps.date': { $regex: `^${date}` } // Match records starting with YYYY-MM-DD
   })
@@ -135,18 +136,16 @@ const GetFacultyName = async (req, res) => {
 
 const AddFacultyBulk = async (req, res) => {
  try {
-  const { email, faculty_id, block } = req.body
+  const {faculty_id, block } = req.body
 
-  if (!email || !faculty_id || !block || email.length !== faculty_id.length || faculty_id.length !== block.length) {
+  if (!faculty_id || !block || faculty_id.length !== block.length) {
    return res.status(400).json(new ApiResponse(false, 'Data is Incomplete'))
   }
-  const formatteddata = email.map((e, index) => ({
-   email: e,
-   faculty_id: faculty_id[index],
+  const formatteddata = faculty_id.map((e, index) => ({
+   facultyid:e, 
    block: block[index]
   }))
   await Faculty.insertMany(formatteddata)
-
   res.status(201).json(new ApiResponse(true, 'Faculty Added in Bulk Successfully'))
  } catch (error) {
   res.status(500).json(new ApiError(false, error.message))

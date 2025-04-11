@@ -104,27 +104,30 @@ const blockCounts = useMemo(() => {
     setSelectedBlock(block);
   };
 
-  return (
-    <div className="space-y-4">
-      {selectedBlock ? (
-        filteredData.length === 0 ? (
+return (
+  <div className="space-y-4">
+    {selectedBlock ? (
+      <>
+        {/* Always show back button */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleBlockSelection(null)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            Back to Blocks
+          </button>
+          <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
+            {selectedBlock} Attendance
+          </h2>
+        </div>
+
+        {filteredData.length === 0 ? (
           <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
             No attendance records with timestamps found for {selectedBlock}.
           </p>
         ) : (
           <>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleBlockSelection(null)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                <ArrowLeft size={20} />
-                Back to Blocks
-              </button>
-              <h2 className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
-                {selectedBlock} Attendance
-              </h2>
-            </div>
             <TableControls
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -163,12 +166,14 @@ const blockCounts = useMemo(() => {
               />
             )}
           </>
-        )
-      ) : (
-        <BlockSelector uniqueBlocks={uniqueBlocks} onBlockSelect={handleBlockSelection} darkMode={darkMode} />
-      )}
-    </div>
-  );
+        )}
+      </>
+    ) : (
+      <BlockSelector uniqueBlocks={uniqueBlocks} onBlockSelect={handleBlockSelection} darkMode={darkMode} />
+    )}
+  </div>
+);
+
 };
 
 export default AttendanceTable_Staff;
