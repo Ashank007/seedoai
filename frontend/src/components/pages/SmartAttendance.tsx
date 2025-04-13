@@ -5,6 +5,7 @@ import EmployeeAttendance from '../api/fa_getall';
 import VehicleAttendance from '../api/va_getall';
 import axios from 'axios';
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URL;
+console.log(BACKEND_URI);
 
 function SmartAttendance() {
   const [darkMode, setDarkMode] = useState(false);
@@ -22,14 +23,14 @@ function SmartAttendance() {
       title: 'Staff Attendance',
       icon: Users,
       color: 'bg-blue-500',
-      apiEndpoint: `${BACKEND_URI}/faculty/getcount`
+      apiEndpoint: `${BACKEND_URI}/api/v1/faculty/getcount`
     },
     {
       id: 'student',
       title: 'Student Attendance',
       icon: GraduationCap,
       color: 'bg-green-500',
-      apiEndpoint: `${BACKEND_URI}/student/getcount`
+      apiEndpoint: `${BACKEND_URI}/api/v1/student/getcount`
 
     },
     {
@@ -37,32 +38,36 @@ function SmartAttendance() {
       title: 'Vehicle Parking',
       icon: Car,
       color: 'bg-purple-500',
-      apiEndpoint: `${BACKEND_URI}/vehicle/getcount`
+      apiEndpoint: `${BACKEND_URI}/api/v1/vehicle/getcount`
     },
   ];
 
 useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const newCounts = { ...counts };
-        
-        for (const category of categories) {
-          const response = await axios.get(category.apiEndpoint);
-          const data = response.data; // Axios puts the response body in .data
-          if (data.status) {
-            newCounts[category.id] = data.message;
-          } else {
-            console.warn(`Failed to fetch count for ${category.id}`);
-            newCounts[category.id] = 0;
-          }
-        }
-        
-        setCounts(newCounts);
-      } catch (error) {
-        console.error('Error fetching counts:', error);
+const fetchCounts = async () => {
+  try {
+    const newCounts = { ...counts };
+    for (const category of categories) {
+      const response = await fetch(category.apiEndpoint, {
+        method: 'GET',
+        headers: {
+	  'ngrok-skip-browser-warning': 'true',
+          'Accept': 'application/json', // Ensure we're expecting JSON
+        },
+      });
+      const data = await response.json(); // Parse the JSON response
+      if (data.status) {
+        newCounts[category.id] = data.message;
+      } else {
+        console.warn(`Failed to fetch count for ${category.id}`);
+        newCounts[category.id] = 0;
       }
-    };
+    }
 
+    setCounts(newCounts);
+  } catch (error) {
+    console.error('Error fetching counts:', error);
+  }
+};
     fetchCounts();
   }, []);
 

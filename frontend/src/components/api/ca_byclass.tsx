@@ -28,7 +28,7 @@ useEffect(() => {
       return;
     }
     axios
-      .post(`${BACKEND_URI}/student/getbyclass`, { classname: selectedClass }) // Send POST request with payload
+      .post(`${BACKEND_URI}/api/v1/student/getbyclass`, { classname: selectedClass }) // Send POST request with payload
       .then((response) => {
         const records = response.data.message || [];
         setData(records);

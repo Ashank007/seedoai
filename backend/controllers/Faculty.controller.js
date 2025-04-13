@@ -99,7 +99,6 @@ const GetFacultyByBlock = async (req, res) => {
 const GetFacultyCountByDate = async (req, res) => {
  try {
   const date = moment().format('YYYY-MM-DD')
-  console.log(date)
   const records = await Faculty.find({
    'timestamps.date': { $regex: `^${date}` } // Match records starting with YYYY-MM-DD
   })

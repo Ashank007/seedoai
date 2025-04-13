@@ -30,7 +30,7 @@ const FacultyAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
     setLoading(true);
     console.log("Fetching data for block:", selectedBlock);
     axios
-      .post(`${BACKEND_URI}/faculty/getbyblock`, { block: selectedBlock })
+      .post(`${BACKEND_URI}/api/v1/faculty/getbyblock`, { block: selectedBlock })
       .then((response) => {
         console.log("API response:", response.data);
         const records = response.data.message || [];
