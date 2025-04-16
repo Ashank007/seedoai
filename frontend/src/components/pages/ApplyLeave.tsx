@@ -42,7 +42,7 @@ const ApplyLeave = () => {
     fileData.append("file", formData.proofFile);
 
     try {
-      const response = await fetch(`${BACKEND_URI}/faculty/addleave`, {
+      const response = await fetch(`${BACKEND_URI}/api/v1/faculty/addleave`, {
         method: "POST",
         headers: { Authorization: `${token}` },
         body: fileData,

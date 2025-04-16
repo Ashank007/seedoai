@@ -27,7 +27,7 @@ export default function FacultyForm() {
     console.log(formData);
     
     try {
-      const response = await fetch(`${BACKEND_URI}/faculty/add`, {
+      const response = await fetch(`${BACKEND_URI}/api/v1/faculty/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

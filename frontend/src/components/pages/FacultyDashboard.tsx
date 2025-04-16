@@ -12,7 +12,7 @@ const FacultyDashboard = () => {
   useEffect(() => {
     const fetchName = async () => {
       try {
-        const response = await fetch(`${BACKEND_URI}/faculty/name`, {
+        const response = await fetch(`${BACKEND_URI}/api/v1/faculty/name`, {
           headers: { Authorization: `${localStorage.getItem("token")}` },
         });
         const data = await response.json();

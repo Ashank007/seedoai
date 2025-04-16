@@ -27,7 +27,7 @@ const Login = () => {
     setLoading(true);
     try {
       const apiUrl =
-        role === 'admin' ? `${BACKEND_URI}/api/v1/admin/login` : `${BACKEND_URI}/faculty/login`;
+        role === 'admin' ? `${BACKEND_URI}/api/v1/admin/login` : `${BACKEND_URI}api/v1/faculty/login`;
 
       const response = await axios.post(apiUrl, { email, password });
       const { token } = response.data.message;

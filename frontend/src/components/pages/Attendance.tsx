@@ -19,7 +19,7 @@ const Attendance = () => {
       const token = localStorage.getItem("token");
 
       try {
-        const response = await fetch(`${BACKEND_URI}/faculty/attendance`, {
+        const response = await fetch(`${BACKEND_URI}/api/v1/faculty/attendance`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -14,7 +14,6 @@ const ClassroomAttendance: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
       try {
 	const response = await axios.get(`${BACKEND_URI}/api/v1/student/getall`, {
 	  headers: {
-	    'ngrok-skip-browser-warning': 'true',  // Skip ngrok warning page
 	    'Accept': 'application/json',  // Ensure the response is expected as JSON
 	  }
 	});

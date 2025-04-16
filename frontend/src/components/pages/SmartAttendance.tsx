@@ -3,7 +3,6 @@ import { Users, GraduationCap, Car, Moon, Sun, ArrowLeft } from 'lucide-react';
 import StudentAttendance from '../api/ca_getall';
 import EmployeeAttendance from '../api/fa_getall';
 import VehicleAttendance from '../api/va_getall';
-import axios from 'axios';
 const BACKEND_URI = import.meta.env.VITE_BACKEND_URL;
 console.log(BACKEND_URI);
 

@@ -13,7 +13,7 @@ const StatusLeave = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`${BACKEND_URI}/faculty/allleaves`, {
+    fetch(`${BACKEND_URI}/api/v1/faculty/allleaves`, {
       method: "GET",
       headers: {
         Authorization: `${token}`,
